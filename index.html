@@ -1,0 +1,95 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SkillSphere - Future of Learning</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+​
+
+    <header>
+
+        <h1>Welcome to SeekhNepal</h1>
+
+        <p>Each and every student deserves quality education. We are here to provide that </p>
+
+    </header>
+
+​
+
+    <nav>
+
+         <button onclick="showLevel('primary')">Primary Level</button>
+
+        <button onclick="showLevel('basic')">Basic Level</button>
+
+        <button onclick="showLevel('secondary')">Secondary Level</button>
+
+        <button onclick="showLevel('higher')">Higher Level</button>
+
+    </nav>
+
+​
+
+    <main id="content-area">
+
+        <!-- Content for different levels will be loaded here -->
+
+        <div id="primary" class="level-content">
+
+            <h2>Primary Level Subjects</h2>
+
+            <ul>
+
+                <li onclick="selectSubject('Mathematics')" class="clickable-subject">Mathematics</li>
+
+                <li onclick="selectSubject('Science')" class="clickable-subject">Science</li>
+
+                <li onclick="selectSubject('English')" class="clickable-subject">English</li>
+
+                <li onclick="selectSubject('Nepali')" class="clickable-subject">Nepali</li>
+
+                <li onclick="selectSubject('History')" class="clickable-subject">History</li>
+
+            </ul>
+
+            <div id="primary-course-details" style="margin-top: 20px;"></div>
+
+        </div>
+
+
+        <div id="secondary" class="level-content" style="display:none;">
+            <h2>Secondary Level Subjects</h2>
+
+            <ul>
+
+                <li onclick="selectSubject('Advanced Mathematics')" class="clickable-subject">Advanced Mathematics</li>
+
+                <li onclick="selectSubject('Physics')" class="clickable-subject">Physics</li>
+
+                <li onclick="selectSubject('Chemistry')" class="clickable-subject">Chemistry</li>
+
+                <li onclick="selectSubject('Introduction to Programming')" class="clickable-subject">Introduction to Programming</li>
+
+                <li onclick="selectSubject('Nepali')" class="clickable-subject">Nepali</li>
+
+                <li onclick="selectSubject('History')" class="clickable-subject">History</li>
+
+            </ul>
+
+            <div id="secondary-course-details" style="margin-top: 20px;"></div>
+
+
+
