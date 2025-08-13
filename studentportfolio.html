@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Student Portfolio - Achievements</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+  body {
+    margin: 0; padding: 0; background: #f0f2f5; font-family: 'Poppins', sans-serif; color: #222;
+    display: flex; justify-content: center; min-height: 100vh; padding: 32px 16px;
+  }
+  .portfolio-container {
+    width: 980px; max-width: 100%; background: #fff; border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.1); padding: 32px 48px 48px;
+    display: flex; flex-direction: column; gap: 32px;
+  }
+  /* Profile Header */
+  .profile-header {
+    display: flex; align-items: center; gap: 24px;
+  }
+  .avatar {
+    width: 96px; height: 96px; border-radius: 50%;
+    background: linear-gradient(135deg, #7dd56f, #28b485);
+    box-shadow: 0 6px 18px rgba(40, 180, 131, 0.5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px; color: #fff; user-select: none;
+  }
+  .student-info {
+    flex: 1;
+  }
+  .student-name {
+    font-size: 2.4rem; font-weight: 700; margin: 0 0 8px;
+    color: #1b2a41;
+  }
+  .points-summary {
+    font-size: 1.15rem; font-weight: 600; color: #28b485;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .point-icon {
+    font-size: 1.4rem;
+  }
+  /* Progress Bar */
+  .progress-bar-container {
+    background: #e3f1e9; border-radius: 20px; height: 24px; overflow: hidden;
+    box-shadow: inset 0 2px 7px rgba(40, 180, 131, 0.25);
+    margin-top: 8px; width: 280px;
+  }
+  .progress-bar-fill {
+    height: 100%; background: linear-gradient(90deg, #28b485, #7dd56f);
+    width: 0%; border-radius: 20px 0 0 20px;
+    transition: width 0.5s ease;
+  }
+  /* Sections */
+  section {
+    background: #f9fafb; border-radius: 12px; padding: 24px 32px;
+    box-shadow: 0 6px 18px rgba(40, 180, 131, 0.1);
+  }
+  section h2 {
+    margin-top: 0; font-size: 1.8rem; color: #1b2a41; font-weight: 700;
+    border-bottom: 2px solid #28b485;
+    padding-bottom: 8px;
+    margin-bottom: 24px;
+  }
+  /* Badges */
+  .badges-list {
+    display: flex; flex-wrap: wrap; gap: 20px;
+  }
+  .badge-card {
+    background: #28b485; color: white;
+    border-radius: 12px; padding: 12px 20px;
+    width: 160px;
+    box-shadow: 0 10px 20px rgba(40, 180, 131, 0.4);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    cursor: default;
+    user-select: none;
+    transition: background 0.3s ease;
+  }
+  .badge-card:hover, .badge-card:focus {
+    background: #1f8d54;
+    outline: none;
+  }
+  .badge-icon {
+    font-size: 32px;
+  }
+  .badge-name {
+    font-weight: 600;
+    text-align: center;
+    font-size: 1.1rem;
+  }
+  /* Certificates */
+  .certificates-list {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+  }
+  .certificate-card {
+    background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 20px 28px; display: flex; flex-direction: column; user-select: none;
+    transition: box-shadow 0.3s ease;
+  }
+  .certificate-card:hover, .certificate-card:focus {
+    box-shadow: 0 8px 30px rgba(40,180,131,0.3);
+    outline: none;
+  }
+  .certificate-title {
+    font-weight: 700; font-size: 1.2rem; margin-bottom: 12px;
+    color: #1b2a41;
+  }
+  .certificate-date {
+    font-size: 0.95rem; color: #666; margin-bottom: 12px;
+  }
+  .certificate-status {
+    margin-top: auto;
+    font-weight: 600; font-size: 1.05rem; color: #28b485;
+  }
+  /* Responsive */
+  @media (max-width: 700px) {
+    .profile-header {
+      flex-direction: column; align-items: center; text-align: center; gap: 12px;
+    }
+    .progress-bar-container {
+      width: 100%;
+      max-width: 280px;
+      margin: 12px auto 0;
+    }
+    section {
+      padding: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="portfolio-container" role="main" aria-label="Student portfolio with achievements">
+
+  <div class="profile-header">
+    <div class="avatar" aria-label="Student avatar" tabindex="0">👩‍🎨</div>
+    <div class="student-info">
+      <h1 class="student-name" tabindex="0">Alexandra Lee</h1>
+      <div class="points-summary" tabindex="0" aria-live="polite" aria-atomic="true">
+        <span class="point-icon" aria-hidden="true">⭐</span>
+        <span id="totalPoints">0</span> Points
+      </div>
+      <div class="progress-bar-container" aria-label="Overall Points Progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+    </div>
+  </div>
+
+  <section aria-labelledby="badgesHeading">
+    <h2 id="badgesHeading">Achievements - Badges</h2>
+    <div class="badges-list" id="badgesList" role="list">
+      <!-- Badges populated here -->
+    </div>
+  </section>
+
+  <section aria-labelledby="certificatesHeading">
+    <h2 id="certificatesHeading">Certificates</h2>
+    <div class="certificates-list" id="certificatesList" role="list">
+      <!-- Certificates populated here -->
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // Sample student data simulating earned achievements
+  const portfolioData = {
+    studentName: "Alexandra Lee",
+    avatarEmoji: "👩‍🎨",
+    totalPoints: 72,
+    progressPercent: 72,
+    badges: [
+      { id: 1, name: "Getting Started", icon: "✏️", description: "Completed Drawing Fundamentals" },
+      { id: 2, name: "Color Guru", icon: "🎨", description: "Mastered Color Theory" },
+      { id: 3, name: "Brush Master", icon: "🖌️", description: "Practiced Advanced Brushwork" },
+    ],
+    certificates: [
+      { id: 1, title: "Fundamentals of Digital Painting", date: "July 2024", status: "Verified" },
+      { id: 2, title: "Color Theory Masterclass", date: "August 2024", status: "Verified" },
+    ]
+  };
+
+  // Initialize portfolio UI
+  const badgesList = document.getElementById('badgesList');
+  const certificatesList = document.getElementById('certificatesList');
+  const totalPointsEl = document.getElementById('totalPoints');
+  const progressBar = document.getElementById('progressBar');
+  const studentNameEl = document.querySelector('.student-name');
+  const avatarEl = document.querySelector('.avatar');
+
+  // Set profile header info
+  studentNameEl.textContent = portfolioData.studentName;
+  avatarEl.textContent = portfolioData.avatarEmoji;
+  totalPointsEl.textContent = portfolioData.totalPoints;
+  progressBar.style.width = portfolioData.progressPercent + '%';
+
+  // Accessible progress bar update
+  const progressBarContainer = progressBar.parentElement;
+  progressBarContainer.setAttribute('aria-valuenow', portfolioData.progressPercent);
+  progressBarContainer.setAttribute('aria-valuetext', `${portfolioData.progressPercent} percent complete`);
+
+  // Populate badges
+  function renderBadges() {
+    badgesList.innerHTML = '';
+    portfolioData.badges.forEach(badge => {
+      const badgeEl = document.createElement('div');
+      badgeEl.className = 'badge-card';
+      badgeEl.setAttribute('tabindex', '0');
+      badgeEl.setAttribute('role', 'listitem');
+      badgeEl.setAttribute('title', badge.description);
+      badgeEl.innerHTML = `
+        <div class="badge-icon" aria-hidden="true">${badge.icon}</div>
+        <div class="badge-name">${badge.name}</div>
+      `;
+      badgesList.appendChild(badgeEl);
+    });
+  }
+
+  // Populate certificates
+  function renderCertificates() {
+    certificatesList.innerHTML = '';
+    portfolioData.certificates.forEach(cert => {
+      const certEl = document.createElement('div');
+      certEl.className = 'certificate-card';
+      certEl.setAttribute('tabindex', '0');
+      certEl.setAttribute('role', 'listitem');
+      certEl.innerHTML = `
+        <div class="certificate-title">${cert.title}</div>
+        <div class="certificate-date">Issued: ${cert.date}</div>
+        <div class="certificate-status">${cert.status}</div>
+      `;
+      certificatesList.appendChild(certEl);
+    });
+  }
+
+  // Initialization
+  renderBadges();
+  renderCertificates();
+
+</script>
+
+</body>
+</html>
