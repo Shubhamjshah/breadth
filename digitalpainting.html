@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Road to Digital Painting - Interactive</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --bg-soft:#0f1830;
+      --fg:#e7eefc;
+      --muted:#b7c3e0;
+      --accent:#7cf6ff;
+      --accent2:#a7f37b;
+      --warn:#ffcc70;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --brush-size: 4px;
+    }
+    *{box-sizing: border-box;}
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--fg);
+      background: radial-gradient(1200px 600px at 70% -10%, #133, transparent),
+                  linear-gradient(180deg,#0a1020,#0e1430 55%, #0a0f24);
+      overflow-x: hidden;
+    }
+    header {
+      position: sticky; top:0; z-index: 50;
+      background: linear-gradient(180deg, rgba(15,25,50,.85), rgba(15,25,50,.55));
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(26px, 3vw, 40px);
+      letter-spacing: .3px;
+    }
+    .sub {
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .progress {
+      position: relative;
+      flex: 1;
+      height: 10px;
+      background: rgba(255,255,255,.06);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar {
+      position: absolute;
+      inset: 0 100% 0 0;
+      background: linear-gradient(90deg,var(--accent),var(--accent2));
+      box-shadow: 0 0 18px rgba(124,246,255,.4) inset;
+      transition: inset .5s ease;
+    }
+    .pct {
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+      width: 40px;
+      text-align: right;
+    }
+    .road-section {
+      position: relative;
+      padding: 30px 0 40px;
+    }
+    .scroller {
+      position: relative;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 10px 0 28px;
+      scroll-snap-type: x proximity;
+    }
+    .scroller::-webkit-scrollbar {
+      height: 10px;
+    }
+    .scroller::-webkit-scrollbar-thumb {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 999px;
+    }
+    .track {
+      position: relative;
+      min-width: 1200px;
+      height: 520px;
+      margin: 0 auto;
+    }
+    svg#pathSvg {
+      position: absolute;
+      inset: 0;
+      filter: drop-shadow(0 0 12px rgba(124,246,255,.25));
+    }
+    .path-bg {
+      stroke: rgba(255,255,255,.08);
+      stroke-width: 8;
+      fill: none;
+    }
+    .path-fg {
+      stroke: url(#grad);
+      stroke-width: 6;
+      fill: none;
+      stroke-dasharray: 12 10;
+      animation: dash 12s linear infinite;
+    }
+    @keyframes dash { to { stroke-dashoffset: -400; } }
+    .node {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      width: 160px;
+      scroll-snap-align: center;
+      cursor: pointer;
+    }
+    .dot {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 20px rgba(124,246,255,.8), 0 0 40px rgba(124,246,255,.35);
+      border: 3px solid #06101f;
+      margin: 0 auto;
+    }
+    .card {
+      margin-top: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+      transition: transform .25s ease, border-color .25s ease, background .25s ease;
+      color: var(--fg);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .card:hover, .card:focus {
+      outline: none;
+      transform: translateY(-6px);
+      border-color: rgba(124,246,255,.55);
+      background: linear-gradient(180deg, rgba(124,246,255,.08), rgba(167,243,123, 0.08));
+    }
+    .card.done {
+      border-color: var(--accent2);
+      background: linear-gradient(180deg, rgba(167,243,123,.15), rgba(167,243,123,.08));
+    }
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .badge {
+      background: rgba(124,246,255,.12);
+      color: var(--accent);
+      border: 1px solid rgba(124,246,255,.35);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .badge .icon {
+      font-size: 14px;
+    }
+    .desc {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      flex-grow: 1;
+    }
+    .done .badge {
+      background: rgba(167,243,123,.15);
+      color: var(--accent2);
+      border-color: rgba(167,243,123,.5);
+    }
+    .done .dot {
+      background: var(--accent2);
+      box-shadow: 0 0 16px rgba(167,243,123,.9), 0 0 30px rgba(167,243,123,.35);
+    }
+    .thumbnail {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: cover;
+      box-shadow: 0 0 10px rgba(124,246,255,0.3);
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .card-content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    /* Drawer */
+    .drawer {
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: min(540px, 100%);
+      background: linear-gradient(180deg, rgba(10,16,36,.98), rgba(10,16,28,.94));
+      border-left: 1px solid rgba(255,255,255,.08);
+      transform: translateX(100%);
+      transition: transform .35s ease;
+      z-index: 60;
+      overflow: auto;
+      color: var(--fg);
+      display: flex;
+      flex-direction: column;
+    }
+    .drawer.open {
+      transform: translateX(0);
+    }
+    .drawer .head {
+      position: sticky;
+      top: 0;
+      background: linear-gradient(180deg, rgba(20,30,60,.9), rgba(20,30,60,.6));
+      backdrop-filter: blur(8px);
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      z-index: 10;
+    }
+    .drawer h2 {
+      margin: .2rem 0;
+      font-size: 22px;
+    }
+    .drawer .meta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      font-size: 12px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255,255,255,.14);
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.06);
+      cursor: pointer;
+      transition: transform .2s ease, background .2s ease;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      background: rgba(255,255,255,.12);
+    }
+    .btn.primary {
+      border-color: rgba(124,246,255,.55);
+      background: linear-gradient(180deg, rgba(124,246,255,.18), rgba(124,246,255,.08));
+    }
+    .grid {
+      display: grid;
+      gap: 12px;
+    }
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0,1fr));
+    }
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0,1fr));
+    }
+    .card-mini {
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+      border-radius: 12px;
+      font-size: 13px;
+      color: var(--fg);
+    }
+    .help {
+      max-width: 1000px;
+      margin: 30px auto 80px;
+      padding: 0 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    /* Brush Simulator */
+    #brush-simulator {
+      border: 1px solid var(--accent2);
+      background: #0e1a2a;
+      border-radius: 10px;
+      width: 100%;
+      height: 150px;
+      margin-top: 16px;
+      cursor: crosshair;
+      box-shadow: 0 0 12px var(--accent2);
+    }
+    /* Palette Preview */
+    .palette {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+    }
+    .palette .color-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 8px rgba(0,0,0,0.3);
+    }
+
+    /* Responsive */
+    @media (max-width: 800px){
+      .track {
+        min-width: 900px;
+        height: 540px;
+      }
+      .node {
+        width: 140px;
+      }
+    }
+    @media (max-width: 560px){
+      .track {
+        min-width: 800px;
+        height: 560px;
+      }
+      .node {
+        width: 130px;
+      }
+      .drawer {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>🎨 Road to Digital Painting</h1>
+      <div class="sub">A curated, interactive roadmap from drawing fundamentals to a polished portfolio. Click a milestone to dive in, check it off, and track your progress.</div>
+      <div class="progress-wrap" aria-label="progress">
+        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+          <div class="bar" id="bar"></div>
+        </div>
+        <div class="pct" id="pct">0%</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="road-section">
+    <div class="scroller" id="scroller" tabindex="0" aria-label="Roadmap scroller (use ◀ ▶ to navigate)">
+      <div class="track" id="track">
+        <!-- SVG Curved Path -->
+        <svg id="pathSvg" viewBox="0 0 1200 520" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="var(--accent)"/>
+              <stop offset="100%" stop-color="var(--accent2)"/>
+            </linearGradient>
+          </defs>
+          <path class="path-bg" d="M40,420 C200,300 340,380 420,300 C520,208 640,240 720,190 C850,110 990,160 1160,80"/>
+          <path class="path-fg" d="M40,420 C200,300 340,380 420,300 C520,208 640,240 720,190 C850,110 990,160 1160,80"/>
+        </svg>
+
+        <!-- Nodes with thumbnails and icons -->
+        <div class="node" style="left:8%; top:78%" data-id="1"></div>
+        <div class="node" style="left:20%; top:60%" data-id="2"></div>
+        <div class="node" style="left:32%; top:70%" data-id="3"></div>
+        <div class="node" style="left:42%; top:54%" data-id="4"></div>
+        <div class="node" style="left:52%; top:44%" data-id="5"></div>
+        <div class="node" style="left:62%; top:48%" data-id="6"></div>
+        <div class="node" style="left:72%; top:40%" data-id="7"></div>
+        <div class="node" style="left:82%; top:34%" data-id="8"></div>
+        <div class="node" style="left:92%; top:26%" data-id="9"></div>
+        <div class="node" style="left:98%; top:22%" data-id="10"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Drawer -->
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Milestone details panel">
+    <div class="head">
+      <div class="meta">
+        <span class="pill" id="badge">Milestone</span>
+        <span class="pill" id="duration">~1–2 weeks</span>
+      </div>
+      <h2 id="title">Title</h2>
+      <div style="display:flex; gap:10px; flex-wrap:wrap">
+        <button class="btn primary" id="toggleDone" aria-pressed="false">Mark as done</button>
+        <button class="btn" id="closeDrawer">Close</button>
+      </div>
+    </div>
+    <div class="content" id="content">
+      <!-- Dynamically filled -->
+    </div>
+  </aside>
+
+  <section class="help container">
+    <p><strong>Tips:</strong> Use the left/right arrow keys to scroll the roadmap. Click any milestone card to open guidance, exercises, and checklists. Your completion is saved to your browser (localStorage).</p>
+  </section>
+
+<script>
+  // Milestones data including thumbnail and demo video embed
+  const data = [
+    {
+      id:1,
+      title:"Drawing Fundamentals",
+      badge:"Start here",
+      badgeIcon:"✏️",
+      duration:"~1–2 weeks",
+      desc:"Build the core skills that power every great painting: line quality, gesture, shapes, and simple forms.",
+      thumbnail:"https://uploads.codesandbox.io/uploads/user/9a2d79cb-6093-4fef-8e03-5b2370a31f6d/8LOJ-drawing-fundamentals.jpg",
+      demoVideo:"https://www.youtube.com/embed/fuMV7mbkUeQ",
+      bullets:[
+        "Gesture drawing (30–60s poses)",
+        "Lines, ellipses, and accuracy drills",
+        "Break objects into boxes, cylinders, spheres"
+      ],
+      exercises:[
+        "Fill 2 pages of straight/curved line practice daily",
+        "10 gesture sketches/day from pose sites",
+        "Draw 5 household objects with simple forms"
+      ]
+    },
+    {
+      id:2,
+      title:"Hardware & Software Setup",
+      badge:"Tools",
+      badgeIcon:"💻",
+      duration:"~1–2 days",
+      desc:"Get comfortable with your tablet and painting app. Create custom shortcuts so you stay in flow.",
+      thumbnail:"https://uploads.codesandbox.io/uploads/user/9a2d79cb-6093-4fef-8e03-5b2370a31f6d/A-_setup.jpg",
+      demoVideo:"https://www.youtube.com/embed/ln1bH6bDwUs",
+      bullets:[
+        "Tablet calibration & pen pressure",
+        "Brush engine basics (size, opacity, flow)",
+        "Layers, selections, transform, navigator"
+      ],
+      exercises:[
+        "Make a workspace with 8–10 essential hotkeys",
+        "Create 3 utility brushes: hard round, soft round, textured"
+      ]
+    },
+    {
+      id:3,
+      title:"Values & Lighting Basics",
+      badge:"Core skill",
+      badgeIcon:"💡",
+      duration:"~1–2 weeks",
+      desc:"Values carry the read. Learn light vs shadow, basic materials, and simple lighting setups.",
+      thumbnail:"https://uploads.codesandbox.io/uploads/user/9a2d79cb-6093-4fef-8e03-5b2370a31f6d/nf1Q-values-lighting.jpg",
+      demoVideo:"https://www.youtube.com/embed/OjF_TxGzi1Y",
+      bullets:[
+        "2–3 value thumbnails (no color)",
+        "Ambient, key, rim light basics",
+        "Planar thinking for heads/objects"
+      ],
+      exercises:[
+        "Do 10 small value studies from photos",
+        "Paint simple still-life with 3 tones"
+      ]
+    },
+    {
+      id:4,
+      title:"Color Theory Quickstart",
+      badge:"Color",
+      badgeIcon:"🎛️",
+      duration:"~1–2 weeks",
+      desc:"Use limited palettes to avoid mud. Control hue, saturation, and temperature shifts.",
+      thumbnail:"https://uploads.codesandbox.io/uploads/user/9a2d79cb-6093-4fef-8e03-5b2370a31f6d/-UmJ-color-theory.jpg",
+      demoVideo:"https://www.youtube.com/embed/1YW6Q8zmPmc",
+      bullets:[
+        "Hue/value/sat relationships",
+        "Warm/cool light logic",
+        "2–3 color limited palettes"
+      ],
+      exercises:[
+        "Create 3 palette swatches and paint small studies",
+        "Repaint a value study using a complementary scheme"
+      ],
+      paletteColors: ["#ff595e", "#1982c4", "#6a4c93", "#8ac926", "#ffca3a"]
+    },
+    {
+      id:5,
+      title:"Brushwork, Edges & Texture",
+      badge:"Technique",
+      badgeIcon:"🖌️",
+      duration:"~1–2 weeks",
+      desc:"Control edges (hard/soft/lost) and use texture tastefully to support the focal point.",
+      thumbnail:"https://uploads.codesandbox.io/uploads/user/9a2d79cb-6093-4fef-8e03-5b2370a31f6d/prc0-brushwork.jpg",
+      demoVideo:"https://www.youtube.com/embed/v2idXvoKipU",
+      bullets:[
+        "Edge hierarchy to guide the eye",
+        "Texture brushes vs photo textures",
+        "Implied detail at distance"
+      ],
+      exercises:[
+        "Edge-only study: limit yourself to 2 brushes",
+        "Texture pass: add then simplify to keep focus"
+      ]
+    },
+    {
+      id:6,
+      title:"Composition & Perspective",
+      badge:"Design",
+      badgeIcon:"📐",
+      duration:"~1–2 weeks",
+      desc:"Arrange shapes, values, and color to create a clear focal point. Keep perspective honest.",
+      thumbnail:"https://uploads.codesandbox.io/uploads/user/9a2d79cb-6093-4fef-8e03-5b2370a31f6d/FYU8-composition-perspective.jpg",
+      demoVideo:"https://www.youtube.com/embed/A5bvR3ZfwfY",
+      bullets:[
+        "Rule of thirds, leading lines, balance",
+        "1/2/3-point perspective refresh",
+        "Avoid tangents; group values"
+      ],
+      exercises:[
+        "Make 12 tiny composition thumbnails",
+        "Paint one simple scene with accurate perspective"
+      ]
+    },
+    {
+      id:7,
+      title:"Subject Tracks (Portrait, Environment, Creature)",
+      badge:"Choose a lane",
+      badgeIcon:"🧭",
+      duration:"~2–4 weeks",
+      desc:"Pick 1–2 tracks to go deeper. Apply fundamentals to the subjects you love.",
+      thumbnail:"https://uploads.codesandbox.io/uploads/user/9a2d79cb-6093-4fef-8e03-5b2370a31f6d/I-D8-subject-tracks.jpg",
+      demoVideo:"https://www.youtube.com/embed/4eHDjEDj0Rs",
+      bullets:[
+        "Portrait: planes of the head, skin tones",
+        "Environment: atmosphere, scale cues",
+        "Creature: silhouette, anatomy mix & match"
+      ],
+      exercises:[
+        "Do 3 studies in your chosen track",
+        "Design 1 original piece using your studies"
+      ]
+    },
+    {
+      id:8,
+      title:"Rendering & Polish",
+      badge:"Finish strong",
+      badgeIcon:"✨",
+      duration:"~1–2 weeks",
+      desc:"Clean up forms, manage edges, add small accents. Avoid overworking by zooming out often.",
+      thumbnail:"https://uploads.codesandbox.io/uploads/user/9a2d79cb-6093-4fef-8e03-5b2370a31f6d/dG6e-rendering-polish.jpg",
+      demoVideo:"https://www.youtube.com/embed/FsYLTuPkHs8",
+      bullets:[
+        "Sharpen focal area, soften periphery",
+        "Material indication (metal, cloth, skin)",
+        "Color dodge/screen sparingly for accents"
+      ],
+      exercises:[
+        "Take a study to 90% finish",
+        "Limit zoom to 50–100% to keep big-picture"
+      ]
+    },
+    {
+      id:9,
+      title:"Workflow, Speed & Iteration",
+      badge:"Process",
+      badgeIcon:"⚡",
+      duration:"~1–2 weeks",
+      desc:"Work in passes: thumbnail → block-in → refine. Batch tasks and keep versions.",
+      thumbnail:"https://uploads.codesandbox.io/uploads/user/9a2d79cb-6093-4fef-8e03-5b2370a31f6d/2upw-workflow.jpg",
+      demoVideo:"https://www.youtube.com/embed/rHrh0Rx8Gb4",
+      bullets:[
+        "Layered workflow templates",
+        "Custom actions/macros",
+        "Timeboxing & iteration"
+      ],
+      exercises:[
+        "Do 3 thumbnails → pick 1 → finish",
+        "Create an action for your common steps"
+      ]
+    },
+    {
+      id:10,
+      title:"Portfolio, Feedback & Publishing",
+      badge:"Showtime",
+      badgeIcon:"📣",
+      duration:"~1 week",
+      desc:"Curate your best 8–12 pieces. Seek critique, present series, and explain your process.",
+      thumbnail:"https://uploads.codesandbox.io/uploads/user/9a2d79cb-6093-4fef-8e03-5b2370a31f6d/1P0B-portfolio.jpg",
+      demoVideo:"https://www.youtube.com/embed/0uldN0h2Jvk",
+      bullets:[
+        "Cohesive set around a theme",
+        "Before/after + breakdowns",
+        "Ask for targeted feedback"
+      ],
+      exercises:[
+        "Assemble a one-page portfolio PDF",
+        "Write 3 project blurbs with goals & learnings"
+      ]
+    }
+  ];
+
+  const nodes = [...document.querySelectorAll('.node')];
+  const progKey = 'dp_road_progress_v1';
+  let progress = new Set(JSON.parse(localStorage.getItem(progKey) || '[]'));
+
+  function iconFor(id){
+    const map={
+      1:'✏️',
+      2:'💻',
+      3:'💡',
+      4:'🎛️',
+      5:'🖌️',
+      6:'📐',
+      7:'🧭',
+      8:'✨',
+      9:'⚡',
+      10:'📣'
+    };
+    return map[id]||'🎨';
+  }
+
+  // Populate nodes with thumbnails and badges with icons
+  nodes.forEach((slot)=>{
+    const id = Number(slot.dataset.id);
+    const item = data.find(d=>d.id===id);
+    const wrap = document.createElement('div');
+    wrap.className = 'wrap';
+    wrap.innerHTML = `
+      <div class="dot" aria-hidden="true"></div>
+      <div class="card ${progress.has(id)?'done':''}" role="button" tabindex="0" aria-label="Open ${item.title}">
+        <div style="display:flex; gap: 10px; align-items:center;">
+          <img src="${item.thumbnail}" alt="" class="thumbnail" />
+          <div class="card-content">
+            <div class="title"><span class="icon" aria-hidden="true">${item.badgeIcon}</span> ${item.title}</div>
+            <div class="desc">${item.desc}</div>
+            <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+              <span class="badge"><span class="icon" aria-hidden="true">${item.badgeIcon}</span> ${item.badge}</span>
+              <span class="badge" title="Estimated duration">${item.duration}</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    slot.appendChild(wrap);
+    const card = slot.querySelector('.card');
+    card.addEventListener('click',()=>openDrawer(item));
+    card.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openDrawer(item);} });
+  });
+
+  // Drawer elements
+  const drawer = document.getElementById('drawer');
+  const closeBtn = document.getElementById('closeDrawer');
+  const toggleDoneBtn = document.getElementById('toggleDone');
+  const content = drawer.querySelector('#content');
+
+  function openDrawer(item){
+    drawer.querySelector('#title').textContent = item.title;
+    drawer.querySelector('#badge').innerHTML = `<span class="icon">${item.badgeIcon}</span> ${item.badge}`;
+    drawer.querySelector('#duration').textContent = item.duration;
+    drawer.dataset.id = item.id;
+    toggleDoneBtn.setAttribute('aria-pressed', progress.has(item.id));
+    toggleDoneBtn.textContent = progress.has(item.id) ? 'Mark as not done' : 'Mark as done';
+
+    let contentHTML = `
+      <p style="color:var(--muted); line-height:1.6">${item.desc}</p>
+      <iframe width="100%" height="200" src="${item.demoVideo}" title="${item.title} demo video" frameborder="0" allowfullscreen style="border-radius:12px; margin-top:12px;"></iframe>
+      <div class="grid two" style="margin-top:14px">
+        <div class="card-mini"><strong>Focus</strong><ul style="margin:8px 0 0 18px">${item.bullets.map(b=>`<li>${b}</li>`).join('')}</ul></div>
+        <div class="card-mini"><strong>Exercises</strong><ul style="margin:8px 0 0 18px">${item.exercises.map(b=>`<li>${b}</li>`).join('')}</ul></div>
+      </div>
+    `;
+
+    if(item.id === 4 && item.paletteColors){
+      const swatches = item.paletteColors.map(color=>`<div class="color-swatch" style="background:${color}" title="${color}"></div>`).join('');
+      contentHTML += `
+        <div style="margin-top:16px">
+          <strong>Example Palette</strong>
+          <div class="palette">${swatches}</div>
+        </div>
+      `;
+    }
+
+    if(item.id !== 10){
+      contentHTML += `
+        <div style="margin-top: 24px;">
+          <strong>Brush Stroke Simulator</strong>
+          <canvas id="brush-simulator" aria-label="Brush stroke simulator area" tabindex="0"></canvas>
+          <small style="color: var(--muted); display:block; margin-top:6px;">Draw here to practice brush strokes (double-click to clear)</small>
+        </div>
+      `;
+    }
+
+    content.innerHTML = contentHTML;
+    drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
+
+    setupBrushSimulator();
+
+    const navHTML = `
+      <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap">
+        <button class="btn" id="prevBtn">◀ Previous</button>
+        <button class="btn" id="nextBtn">Next ▶</button>
+      </div>`;
+    content.insertAdjacentHTML('beforeend', navHTML);
+
+    content.querySelector('#prevBtn').onclick = ()=>jump(-1);
+    content.querySelector('#nextBtn').onclick = ()=>jump(1);
+  }
+
+  function closeDrawer(){
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+    drawer.removeAttribute('data-id');
+  }
+  closeBtn.addEventListener('click', closeDrawer);
+  window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeDrawer(); });
+
+  toggleDoneBtn.addEventListener('click', ()=>{
+    const id = Number(drawer.dataset.id);
+    if(!id) return;
+    if(progress.has(id)) progress.delete(id); else progress.add(id);
+    localStorage.setItem(progKey, JSON.stringify([...progress]));
+    document.querySelectorAll(`.node[data-id='${id}'] .card`).forEach(c=>{
+      c.classList.toggle('done', progress.has(id));
+    });
+    toggleDoneBtn.setAttribute('aria-pressed', progress.has(id));
+    toggleDoneBtn.textContent = progress.has(id) ? 'Mark as not done' : 'Mark as done';
+    updateProgress();
+  });
+
+  function updateProgress(){
+    const pct = Math.round((progress.size / data.length) * 100);
+    document.getElementById('pct').textContent = pct + '%';
+    const bar = document.getElementById('bar');
+    bar.style.inset = `0 ${100-pct}% 0 0`;
+    const pb = document.querySelector('.progress');
+    pb.setAttribute('aria-valuenow', pct);
+  }
+  updateProgress();
+
+  const scroller = document.getElementById('scroller');
+  scroller.addEventListener('keydown', (e)=>{
+    if(e.key==='ArrowRight'){ scroller.scrollBy({left: 160, behavior:'smooth'}); }
+    if(e.key==='ArrowLeft'){ scroller.scrollBy({left: -160, behavior:'smooth'}); }
+  });
+
+  function jump(delta){
+    const current = Number(drawer.dataset.id);
+    let idx = data.findIndex(d=>d.id===current);
+    idx = Math.min(Math.max(idx + delta, 0), data.length-1);
+    const item = data[idx];
+    const node = document.querySelector(`.node[data-id='${item.id}']`);
+    node && node.scrollIntoView({inline:'center', block:'nearest', behavior:'smooth'});
+    openDrawer(item);
+  }
+
+  function setupBrushSimulator(){
+    const canvas = document.getElementById('brush-simulator');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--brush-size')) || 4;
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent2').trim();
+
+    let drawing = false;
+    let lastX = 0, lastY = 0;
+
+    function startDraw(e){
+      drawing = true;
+      const {x, y} = getPointerPos(e, canvas);
+      lastX = x;
+      lastY = y;
+    }
+    function draw(e){
+      if(!drawing) return;
+      e.preventDefault();
+      const {x, y} = getPointerPos(e, canvas);
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      lastX = x;
+      lastY = y;
+    }
+    function stopDraw(){
+      drawing = false;
+    }
+    function getPointerPos(e, canvas){
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    canvas.onmousedown = startDraw;
+    canvas.ontouchstart = startDraw;
+    canvas.onmousemove = draw;
+    canvas.ontouchmove = draw;
+    canvas.onmouseup = stopDraw;
+    canvas.onmouseleave = stopDraw;
+    canvas.ontouchend = stopDraw;
+    canvas.ontouchcancel = stopDraw;
+
+    canvas.ondblclick = ()=>{
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    };
+  }
+
+  if(!localStorage.getItem('dp_seen')){
+    const first = data[0];
+    setTimeout(()=>{
+      document.querySelector(`.node[data-id='${first.id}']`).scrollIntoView({inline:'center', block:'nearest', behavior:'smooth'});
+      openDrawer(first);
+    }, 400);
+    localStorage.setItem('dp_seen','1');
+  }
+</script>
+</body>
+</html>
