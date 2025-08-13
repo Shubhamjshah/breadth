@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Road to Web Tech & Dev</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+    body {
+        margin: 0;
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
+        color: white;
+        overflow-x: hidden;
+    }
+
+    header {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    header h1 {
+        font-size: 2.5rem;
+        color: #00e6ff;
+        margin-bottom: 10px;
+    }
+    header p {
+        opacity: 0.8;
+        font-size: 1.1rem;
+    }
+
+    /* Roadmap container */
+    .roadmap {
+        display: flex;
+        gap: 50px;
+        padding: 40px 20px;
+        position: relative;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+    }
+
+    /* Animated connecting line */
+    .roadmap::before {
+        content: '';
+        position: absolute;
+        top: 90px;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(to right, #00e6ff, #00ff9d);
+        background-size: 200% 100%;
+        animation: moveLine 3s linear infinite;
+        z-index: 0;
+    }
+    @keyframes moveLine {
+        0% { background-position: 0 0; }
+        100% { background-position: 200% 0; }
+    }
+
+    /* Step card */
+    .step {
+        position: relative;
+        flex: 0 0 200px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        cursor: pointer;
+        transition: transform 0.3s, background 0.3s;
+        z-index: 1;
+        scroll-snap-align: center;
+    }
+    .step:hover {
+        transform: translateY(-10px);
+        background: rgba(0,230,255,0.1);
+    }
+
+    /* Icon circle */
+    .icon {
+        width: 60px;
+        height: 60px;
+        background: #00e6ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        font-size: 1.5rem;
+        color: #0f2027;
+        box-shadow: 0 0 10px #00e6ff, 0 0 20px #00ff9d;
+    }
+
+    .step h3 {
+        margin: 5px 0 10px 0;
+        font-size: 1.1rem;
+        color: #00ffcc;
+    }
+
+    /* Details */
+    .details {
+        display: none;
+        font-size: 0.9rem;
+        color: #ccc;
+        line-height: 1.4;
+    }
+    .details.show {
+        display: block;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Scrollbar styling */
+    .roadmap::-webkit-scrollbar {
+        height: 8px;
+    }
+    .roadmap::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .roadmap::-webkit-scrollbar-thumb {
+        background: #00e6ff;
+        border-radius: 4px;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>🚀 Road to Web Tech & Dev</h1>
+    <p>Scroll through the journey and explore each milestone</p>
+</header>
+
+<div class="roadmap">
+    <div class="step" onclick="toggleDetails(this)">
+        <div class="icon"><i class="fa-brands fa-html5"></i></div>
+        <h3>HTML Basics</h3>
+        <div class="details">Structure of web pages: headings, paragraphs, links, images, and semantic tags.</div>
+    </div>
+    <div class="step" onclick="toggleDetails(this)">
+        <div class="icon"><i class="fa-brands fa-css3-alt"></i></div>
+        <h3>CSS Styling</h3>
+        <div class="details">Master layouts (Flexbox, Grid), animations, and responsive design.</div>
+    </div>
+    <div class="step" onclick="toggleDetails(this)">
+        <div class="icon"><i class="fa-brands fa-js"></i></div>
+        <h3>JavaScript</h3>
+        <div class="details">DOM manipulation, events, ES6+, and adding interactivity.</div>
+    </div>
+    <div class="step" onclick="toggleDetails(this)">
+        <div class="icon"><i class="fa-solid fa-layer-group"></i></div>
+        <h3>Frontend Frameworks</h3>
+        <div class="details">React, Vue, or Angular to create modern apps.</div>
+    </div>
+    <div class="step" onclick="toggleDetails(this)">
+        <div class="icon"><i class="fa-solid fa-server"></i></div>
+        <h3>Backend Basics</h3>
+        <div class="details">Node.js, databases (SQL/NoSQL), and APIs.</div>
+    </div>
+    <div class="step" onclick="toggleDetails(this)">
+        <div class="icon"><i class="fa-solid fa-code-branch"></i></div>
+        <h3>Full-Stack Projects</h3>
+        <div class="details">Integrating frontend, backend, and databases.</div>
+    </div>
+    <div class="step" onclick="toggleDetails(this)">
+        <div class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <h3>Deployment</h3>
+        <div class="details">Hosting, Git/GitHub, and CI/CD pipelines.</div>
+    </div>
+</div>
+
+<script>
+    function toggleDetails(stepElement) {
+        const details = stepElement.querySelector('.details');
+        details.classList.toggle('show');
+    }
+</script>
+
+</body>
+</html>
